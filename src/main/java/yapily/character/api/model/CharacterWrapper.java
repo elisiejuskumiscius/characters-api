@@ -7,6 +7,6 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CharacterWrapper {
 
-	private CharacterContainer data;
+    private CharacterContainer data;
 
 }

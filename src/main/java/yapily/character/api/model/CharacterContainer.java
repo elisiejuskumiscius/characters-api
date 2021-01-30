@@ -9,7 +9,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CharacterContainer {
 
-	private List<Character> results;
+    private List<Character> results;
     public long count;
     public long total;
+
 }

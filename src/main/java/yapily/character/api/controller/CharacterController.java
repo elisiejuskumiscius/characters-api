@@ -17,13 +17,12 @@ public class CharacterController {
 
     @GetMapping("/characters")
     public Set<Long> getCharacters() {
-    	return characterService.getAllCharacters();
+        return characterService.getAllCharacters();
     }
 
     @GetMapping("/characters/{characterId}")
     public Character getCharacterById(
-    		@PathVariable long characterId) {
-		return characterService.getCharacterById(characterId);
+            @PathVariable long characterId) {
+        return characterService.getCharacterById(characterId);
     }
-
 }
