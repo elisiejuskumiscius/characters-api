@@ -1,4 +1,10 @@
 # characters-api
+
+In order to build project <b>Gradle</b> is needed. You can check it by running:
+```
+gradle -v
+```
+
 The Marvel Comics API http://developer.marvel.com/ allows developers to access information about Marvel's vast library of comics. 
 
 1. Served an endpoint at http://localhost:8080/characters that returns all the Marvel character ids only, in a JSON
