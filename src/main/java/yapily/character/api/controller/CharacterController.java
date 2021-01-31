@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import yapily.character.api.model.Character;
 import yapily.character.api.service.CharacterService;
 
+import java.net.URISyntaxException;
 import java.util.Set;
 
 @RestController
@@ -16,7 +17,7 @@ public class CharacterController {
     private CharacterService characterService;
 
     @GetMapping("/characters")
-    public Set<Long> getCharacters() {
+    public Set<Long> getCharacters() throws URISyntaxException {
         return characterService.getAllCharacters();
     }
 

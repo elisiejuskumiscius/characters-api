@@ -22,9 +22,7 @@ import java.util.Set;
 public class CharacterService {
 
     @Value("${marvel.url.base}")
-    private String BASE;
-    @Value("${marvel.url.characters.path}")
-    private String CHARACTERS_PATH;
+    private String BASE_URL;
     @Value("${marvel.api.public.key}")
     private String PUBLIC_KEY;
     @Value("${marvel.api.private.key}")
@@ -37,45 +35,39 @@ public class CharacterService {
         this.restTemplate = builder.build();
     }
 
-    @Cacheable(value = "characters")
-    public Set<Long> getAllCharacters() {
-        Set<Long> characterIDs = new HashSet<>();
+    private String buildUrl() throws URISyntaxException {
         String timeStamp = Long.toString(System.currentTimeMillis());
-        try {
-            long offset = 0;
-            long total = 1;
-            while (offset < total) {
-                URI uri = new URIBuilder(BASE + CHARACTERS_PATH)
-                        .addParameter("limit", "100")
-                        .addParameter("offset", Long.toString(offset))
-                        .addParameter("apikey", PUBLIC_KEY)
-                        .addParameter("ts", timeStamp)
-                        .addParameter("hash", DigestUtils.md5Hex(timeStamp + PRIVATE_KEY + PUBLIC_KEY))
-                        .build();
+        URI uri = new URIBuilder()
+                .addParameter("ts", timeStamp)
+                .addParameter("apikey", PUBLIC_KEY)
+                .addParameter("hash", DigestUtils.md5Hex(timeStamp + PRIVATE_KEY + PUBLIC_KEY))
+                .build();
+        return uri.toString();
+    }
 
-                CharacterWrapper characterWrapper = restTemplate.getForObject(uri.toString(), CharacterWrapper.class);
+    @Cacheable(value = "characters")
+    public Set<Long> getAllCharacters() throws URISyntaxException {
+        Set<Long> characterIDs = new HashSet<>();
+        long offset = 0;
+        long total;
+        do {
+            URIBuilder uri = new URIBuilder(BASE_URL + buildUrl())
+                    .addParameter("limit", "100")
+                    .addParameter("offset", Long.toString(offset));
+            CharacterWrapper characterWrapper = restTemplate.getForObject(uri.toString(), CharacterWrapper.class);
+            assert characterWrapper != null;
+            total = characterWrapper.getData().getTotal();
+            offset += characterWrapper.getData().getCount();
+            characterWrapper.getData().getResults()
+                    .forEach(character -> characterIDs.add(character.getId()));
+        } while (offset < total);
 
-                assert characterWrapper != null;
-                total = characterWrapper.getData().getTotal();
-                offset += characterWrapper.getData().getCount();
-                characterWrapper.getData().getResults()
-                        .forEach(character -> characterIDs.add(character.getId()));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         return characterIDs;
     }
 
     public Character getCharacterById(long characterId) {
-        String timeStamp = Long.toString(System.currentTimeMillis());
         try {
-            URI uri = new URIBuilder(BASE + CHARACTERS_PATH + "/" + characterId)
-                    .addParameter("ts", timeStamp)
-                    .addParameter("apikey", PUBLIC_KEY)
-                    .addParameter("hash", DigestUtils.md5Hex(timeStamp + PRIVATE_KEY + PUBLIC_KEY))
-                    .build();
-
+            URIBuilder uri = new URIBuilder(BASE_URL + "/" + characterId + buildUrl());
             CharacterWrapper characterWrapper = restTemplate.getForObject(uri.toString(), CharacterWrapper.class);
             assert characterWrapper != null;
             Character character = characterWrapper.getData().getResults().get(0);
